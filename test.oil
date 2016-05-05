@@ -18,34 +18,44 @@ CPU ATMEL_AT91SAM7S256
   /* Definition of application mode */
   APPMODE appmode1{};
   
-  //TASK CheckDistance
-  //{
-  	// AUTOSTART = TRUE { APPMODE = appmode1; };
-   // PRIORITY = 3;
-   // ACTIVATION = 1;
-   // SCHEDULE = FULL;
-   // STACKSIZE = 512;
-   // EVENT = EventCheckDistance;
-  //};
+  TASK CheckDistance
+  {
+  	 AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 3;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512;
+    EVENT = EventCheckDistance;
+  };
 
-  TASK TouchOn
+  TASK Forward
   {
     AUTOSTART = TRUE { APPMODE = appmode1; };
     PRIORITY = 2;
     ACTIVATION = 1;
     SCHEDULE = FULL;
     STACKSIZE = 512;
-    EVENT = EventTouchOn;
+    EVENT = EventForward;
   };
-
-  TASK TouchOff
+  
+  TASK Reverse
   {
     AUTOSTART = TRUE { APPMODE = appmode1; };
-    PRIORITY = 4; /* Smaller value means lower priority */
+    PRIORITY = 2;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512;
+    EVENT = EventReverse;
+  };
+
+  TASK Stop
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 5; /* Smaller value means lower priority */
     ACTIVATION = 1;
     SCHEDULE = FULL;
     STACKSIZE = 512; /* Stack size */
-    EVENT = EventTouchOff;
+    EVENT = EventStop;
   };
   
   TASK CheckEvents
@@ -56,6 +66,26 @@ CPU ATMEL_AT91SAM7S256
     SCHEDULE = FULL;
     STACKSIZE = 512; /* Stack size */
     EVENT = EventCheckEvents;
+  };
+  
+  TASK TurnLeft
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 4; /* Smaller value means lower priority */
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512; /* Stack size */
+    EVENT = EventTurnLeft;
+  };
+  
+  TASK TurnRight
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 4; /* Smaller value means lower priority */
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512; /* Stack size */
+    EVENT = EventTurnRight;
   };
  
 
@@ -70,20 +100,35 @@ CPU ATMEL_AT91SAM7S256
    	AUTOSTART = FALSE;
   	};
 
-  EVENT EventTouchOn
+  EVENT EventForward
   {
    	MASK = AUTO;
   };
   
-  EVENT EventTouchOff
+  EVENT EventReverse
   {
    	MASK = AUTO;
   };
   
-  //EVENT EventCheckDistance
-  //{
-  	//	MASK = AUTO;
-  //};
+  EVENT EventTurnRight
+  {
+  		MASK = AUTO;
+  };
+  
+  EVENT EventTurnLeft
+  {
+  		MASK = AUTO;
+  };
+  
+  EVENT EventStop
+  {
+   	MASK = AUTO;
+  };
+  
+  EVENT EventCheckDistance
+  {
+  		MASK = AUTO;
+  };
   
   EVENT EventCheckEvents
   {
@@ -100,4 +145,3 @@ CPU ATMEL_AT91SAM7S256
   };
 
 };
-

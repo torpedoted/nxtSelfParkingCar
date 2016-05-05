@@ -6,34 +6,42 @@
 
 DeclareCounter(SysTimerCnt);
 DeclareAlarm(AlarmCheckEvents);
-DeclareEvent(EventTouchOn);
-DeclareEvent(EventTouchOff);
-//DeclareEvent(EventCheckDistance);
+DeclareEvent(EventForward);
+DeclareEvent(EventReverse);
+DeclareEvent(EventStop);
+DeclareEvent(EventCheckDistance);
 DeclareEvent(EventCheckEvents);
-DeclareTask(TouchOn);
-DeclareTask(TouchOff);
-//DeclareTask(CheckDistance);
+DeclareEvent(EventTurnLeft);
+DeclareEvent(EventTurnRight);
+DeclareTask(TurnRight);
+DeclareTask(TurnLeft);
+DeclareTask(Forward);
+DeclareTask(Reverse);
+DeclareTask(Stop);
+DeclareTask(CheckDistance);
 DeclareTask(CheckEvents);
+
+int gapDistance = 0;
 
 void ecrobot_device_initialize(void)
 {
-	
+	ecrobot_init_sonar_sensor(NXT_PORT_S2);
 }
 void ecrobot_device_terminate(void)
 {	
-
+	ecrobot_term_sonar_sensor(NXT_PORT_S2);
 }
 void user_1ms_isr_type2(void)
 {	
 	(void)SignalCounter(SysTimerCnt); /* Increment OSEK Alarm Counter */
 }
 /* Alarm executed Task2 */
-TASK(TouchOn)
+TASK(Forward)
 {
 	while(1)
 	{
-		WaitEvent(EventTouchOn);
-   	ClearEvent(EventTouchOn);
+		WaitEvent(EventForward);
+   	ClearEvent(EventForward);
 		nxt_motor_set_speed(NXT_PORT_B, -100, 0);
 		nxt_motor_set_speed(NXT_PORT_C, -100, 0);
 		display_clear(0);
@@ -43,15 +51,45 @@ TASK(TouchOn)
 			
 		display_update();
 		
+		SetEvent(CheckDistance, EventCheckDistance);
 	}
 }
 
-TASK(TouchOff)
+TASK(Reverse)
+{
+	int degree = 0;
+	while(1)
+	{
+		WaitEvent(EventReverse);
+   	ClearEvent(EventReverse);
+		nxt_motor_set_speed(NXT_PORT_B, 100, 0);
+		nxt_motor_set_speed(NXT_PORT_C, 100, 0);
+		display_clear(0);
+		display_goto_xy(0, 0);
+		
+		display_string("Button ON");
+			
+		display_update();
+		
+		nxt_motor_set_count(NXT_PORT_B, 0);
+      
+      while(degree < abs(gapDistance/2))
+      {
+      	systick_wait_ms(100);
+      	degree = nxt_motor_get_count(NXT_PORT_B);
+      }
+      
+      degree = 0;
+		
+	}
+}
+
+TASK(Stop)
 {
 	while(1)
 	{
-		WaitEvent(EventTouchOff);
-      ClearEvent(EventTouchOff);
+		WaitEvent(EventStop);
+      ClearEvent(EventStop);
       
       nxt_motor_set_speed(NXT_PORT_B, 0, 1);
       nxt_motor_set_speed(NXT_PORT_C, 0, 1);
@@ -65,10 +103,148 @@ TASK(TouchOff)
 	}
 }
 
-//TASK(CheckDistance)
-//{
+TASK(TurnRight)
+{
+int degree = 0;
+	while(1)
+	{
+		WaitEvent(EventTurnRight);
+      ClearEvent(EventTurnRight);
+      nxt_motor_set_count(NXT_PORT_A, 0);
+      nxt_motor_set_speed(NXT_PORT_A, 70, 0);
+      degree = nxt_motor_get_count(NXT_PORT_A);
+      
+      display_clear(0);
+		display_goto_xy(0, 0);
+		
+		display_int(degree, 0);
+			
+		display_update();
+		
+      while(degree < 65)
+      {
+      	systick_wait_ms(25);
+      	degree = nxt_motor_get_count(NXT_PORT_A);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(degree, 0);
+			display_update();
+      	
+      }
+      	degree = 0;
+		nxt_motor_set_speed(NXT_PORT_A, 0, 1);
+	}
+}
+
+TASK(TurnLeft)
+{
+int degree = 0;
+	while(1)
+	{
+		WaitEvent(EventTurnLeft);
+      ClearEvent(EventTurnLeft);
+      nxt_motor_set_count(NXT_PORT_A, 0);
+      nxt_motor_set_speed(NXT_PORT_A, -70, 0);
+      degree = nxt_motor_get_count(NXT_PORT_A);
+      
+      display_clear(0);
+		display_goto_xy(0, 0);
+		
+		display_int(degree, 0);
+			
+		display_update();
+		
+      while(degree > -65)
+      {
+      	systick_wait_ms(25);
+      	degree = nxt_motor_get_count(NXT_PORT_A);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(degree, 0);
+			display_update();
+      	
+      }
+      	degree = 0;
+		nxt_motor_set_speed(NXT_PORT_A, 0, 1);
+		
+	}
+}
+
+TASK(CheckDistance)
+{
+	int sonar;
 	
-//}
+	while(1)
+	{
+		WaitEvent(EventCheckDistance);
+      ClearEvent(EventCheckDistance);
+      
+      while(gapDistance > -4000)
+      {
+      gapDistance = 0;
+      //Calculate distance a few times to get accurate
+      for(int i = 0; i < 10; i++)
+      {
+      systick_wait_ms(50);
+      sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      }
+      
+      while(sonar > 20)
+      {
+      	systick_wait_ms(100);
+      	sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(sonar, 0);
+			display_update();
+      }
+      
+      for(int i = 0; i < 10; i++)
+      {
+      systick_wait_ms(50);
+      sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      }
+      
+      while(sonar < 30)
+      {
+      	systick_wait_ms(100);
+      	sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(sonar, 0);
+			display_update();
+      }
+      
+      nxt_motor_set_count(NXT_PORT_B, 0);
+      
+      while(sonar > 20)
+      {
+      	systick_wait_ms(100);
+      	sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      	gapDistance = nxt_motor_get_count(NXT_PORT_B);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(gapDistance, 0);
+			display_update();
+      }
+      
+      }
+	
+		SetEvent(Stop, EventStop);
+		
+		SetEvent(TurnLeft, EventTurnLeft);
+		
+		SetEvent(Reverse, EventReverse);
+		
+		SetEvent(TurnRight, EventTurnRight);
+		SetEvent(TurnRight, EventTurnRight);
+		
+		SetEvent(Reverse, EventReverse);
+		
+		SetEvent(TurnLeft, EventTurnLeft);	
+		
+	}
+}
 
 TASK(CheckEvents)
 {
@@ -95,26 +271,11 @@ TASK(CheckEvents)
 		{
 			Button = 0;
 			motorOn = 1;
-			SetEvent(TouchOn, EventTouchOn);
+			SetEvent(Forward, EventForward);
 		}
-		
-		//if(Button == 1 && motorOn == 1)
-		//{
-		//	Button = 0;
-		//	motorOn = 0;
-		//	SetEvent(TouchOff, EventTouchOff);
-		//}
-		
-		
+			
 	}
 	
 	TerminateTask();
 
 }
-
-
-
-
-
-
-
