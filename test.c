@@ -8,20 +8,20 @@ DeclareCounter(SysTimerCnt);
 DeclareAlarm(AlarmCheckEvents);
 DeclareEvent(EventTouchOn);
 DeclareEvent(EventTouchOff);
-//DeclareEvent(EventCheckDistance);
+DeclareEvent(EventCheckDistance);
 DeclareEvent(EventCheckEvents);
 DeclareTask(TouchOn);
 DeclareTask(TouchOff);
-//DeclareTask(CheckDistance);
+DeclareTask(CheckDistance);
 DeclareTask(CheckEvents);
 
 void ecrobot_device_initialize(void)
 {
-	
+	ecrobot_init_sonar_sensor(NXT_PORT_S2);
 }
 void ecrobot_device_terminate(void)
 {	
-
+	ecrobot_term_sonar_sensor(NXT_PORT_S2);
 }
 void user_1ms_isr_type2(void)
 {	
@@ -43,6 +43,7 @@ TASK(TouchOn)
 			
 		display_update();
 		
+		SetEvent(CheckDistance, EventCheckDistance);
 	}
 }
 
@@ -65,10 +66,35 @@ TASK(TouchOff)
 	}
 }
 
-//TASK(CheckDistance)
-//{
+TASK(CheckDistance)
+{
+	int sonar;
 	
-//}
+	while(1)
+	{
+		WaitEvent(EventCheckDistance);
+      ClearEvent(EventCheckDistance);
+      
+      for(int i = 0; i < 10; i++)
+      {
+      systick_wait_ms(50);
+      sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      }
+      
+      while(sonar > 20)
+      {
+      	systick_wait_ms(100);
+      	sonar = ecrobot_get_sonar_sensor(NXT_PORT_S2);
+      	display_clear(0);
+			display_goto_xy(0, 0);
+			display_int(sonar, 0);
+			display_update();
+      }
+	
+		SetEvent(TouchOff, EventTouchOff);
+	
+	}
+}
 
 TASK(CheckEvents)
 {
