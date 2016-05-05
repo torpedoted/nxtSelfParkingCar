@@ -1,0 +1,103 @@
+#include "implementation.oil"
+
+CPU ATMEL_AT91SAM7S256
+{
+  OS LEJOS_OSEK
+  {
+    STATUS = EXTENDED;
+    STARTUPHOOK = FALSE;
+    ERRORHOOK = FALSE;
+    SHUTDOWNHOOK = FALSE;
+    PRETASKHOOK = FALSE;
+    POSTTASKHOOK = FALSE;
+    USEGETSERVICEID = FALSE;
+    USEPARAMETERACCESS = FALSE;
+    USERESSCHEDULER = FALSE;
+  };
+
+  /* Definition of application mode */
+  APPMODE appmode1{};
+  
+  //TASK CheckDistance
+  //{
+  	// AUTOSTART = TRUE { APPMODE = appmode1; };
+   // PRIORITY = 3;
+   // ACTIVATION = 1;
+   // SCHEDULE = FULL;
+   // STACKSIZE = 512;
+   // EVENT = EventCheckDistance;
+  //};
+
+  TASK TouchOn
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 2;
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512;
+    EVENT = EventTouchOn;
+  };
+
+  TASK TouchOff
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 4; /* Smaller value means lower priority */
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512; /* Stack size */
+    EVENT = EventTouchOff;
+  };
+  
+  TASK CheckEvents
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 1; /* Smaller value means lower priority */
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512; /* Stack size */
+    EVENT = EventCheckEvents;
+  };
+ 
+
+	ALARM AlarmCheckEvents
+  	{
+   	COUNTER = SysTimerCnt;
+   	ACTION = SETEVENT
+   	{
+   		TASK = CheckEvents;
+   		EVENT = EventCheckEvents;
+   	};
+   	AUTOSTART = FALSE;
+  	};
+
+  EVENT EventTouchOn
+  {
+   	MASK = AUTO;
+  };
+  
+  EVENT EventTouchOff
+  {
+   	MASK = AUTO;
+  };
+  
+  //EVENT EventCheckDistance
+  //{
+  	//	MASK = AUTO;
+  //};
+  
+  EVENT EventCheckEvents
+  {
+  		MASK = AUTO;
+  };
+  
+  
+  /* Definition of OSEK Alarm Counter */
+  COUNTER SysTimerCnt
+  {
+    MINCYCLE = 1;
+    MAXALLOWEDVALUE = 10000;
+    TICKSPERBASE = 1; /* One tick is equal to 1msec */
+  };
+
+};
+
