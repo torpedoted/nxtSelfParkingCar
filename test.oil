@@ -88,6 +88,15 @@ CPU ATMEL_AT91SAM7S256
     EVENT = EventTurnRight;
   };
  
+ TASK ForwardStep
+  {
+    AUTOSTART = TRUE { APPMODE = appmode1; };
+    PRIORITY = 5; /* Smaller value means lower priority */
+    ACTIVATION = 1;
+    SCHEDULE = FULL;
+    STACKSIZE = 512; /* Stack size */
+    EVENT = EventForwardStep;
+  };
 
 	ALARM AlarmCheckEvents
   	{
@@ -101,6 +110,11 @@ CPU ATMEL_AT91SAM7S256
   	};
 
   EVENT EventForward
+  {
+   	MASK = AUTO;
+  };
+  
+  EVENT EventForwardStep
   {
    	MASK = AUTO;
   };

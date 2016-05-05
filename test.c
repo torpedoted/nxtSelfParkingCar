@@ -14,6 +14,8 @@ DeclareEvent(EventCheckDistance);
 DeclareEvent(EventCheckEvents);
 DeclareEvent(EventTurnLeft);
 DeclareEvent(EventTurnRight);
+DeclareEvent(EventForwardStep);
+DeclareTask(ForwardStep);
 DeclareTask(TurnRight);
 DeclareTask(TurnLeft);
 DeclareTask(Forward);
@@ -53,6 +55,35 @@ TASK(Forward)
 		display_update();
 		
 		SetEvent(CheckDistance, EventCheckDistance);
+	}
+}
+
+TASK(ForwardStep)
+{
+	int degree = 0;
+	while(1)
+	{
+		WaitEvent(EventForwardStep);
+   	ClearEvent(EventForwardStep);
+		nxt_motor_set_speed(NXT_PORT_B, -100, 0);
+		nxt_motor_set_speed(NXT_PORT_C, -100, 0);
+		display_clear(0);
+		display_goto_xy(0, 0);
+		
+		display_string("ForwardStep");
+			
+		display_update();
+		
+		nxt_motor_set_count(NXT_PORT_B, 0);
+      
+      while(degree > (gapDistance/3))
+      {
+      	systick_wait_ms(50);
+      	degree = nxt_motor_get_count(NXT_PORT_B);
+      }
+      
+      degree = 0;
+		
 	}
 }
 
@@ -182,7 +213,7 @@ TASK(CheckDistance)
 		WaitEvent(EventCheckDistance);
       ClearEvent(EventCheckDistance);
       
-      while(gapDistance > -4000)
+      while(gapDistance > -3000)
       {
       gapDistance = 0;
       //Calculate distance a few times to get accurate
@@ -233,6 +264,9 @@ TASK(CheckDistance)
       
       }
 	
+		SetEvent(Stop, EventStop);
+		
+		SetEvent(ForwardStep, EventForwardStep);
 		SetEvent(Stop, EventStop);
 		
 		SetEvent(TurnLeft, EventTurnLeft);
