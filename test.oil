@@ -41,7 +41,7 @@ CPU ATMEL_AT91SAM7S256
   TASK Reverse
   {
     AUTOSTART = TRUE { APPMODE = appmode1; };
-    PRIORITY = 2;
+    PRIORITY = 5;
     ACTIVATION = 1;
     SCHEDULE = FULL;
     STACKSIZE = 512;
@@ -51,7 +51,7 @@ CPU ATMEL_AT91SAM7S256
   TASK Stop
   {
     AUTOSTART = TRUE { APPMODE = appmode1; };
-    PRIORITY = 5; /* Smaller value means lower priority */
+    PRIORITY = 6; /* Smaller value means lower priority */
     ACTIVATION = 1;
     SCHEDULE = FULL;
     STACKSIZE = 512; /* Stack size */

@@ -2,6 +2,7 @@
 #include "kernel.h"
 #include "kernel_id.h"
 #include "ecrobot_interface.h"
+#include <math.h>
 
 
 DeclareCounter(SysTimerCnt);
@@ -67,13 +68,13 @@ TASK(Reverse)
 		display_clear(0);
 		display_goto_xy(0, 0);
 		
-		display_string("Button ON");
+		display_string("Reverse");
 			
 		display_update();
 		
 		nxt_motor_set_count(NXT_PORT_B, 0);
       
-      while(degree < abs(gapDistance/2))
+      while(degree < -(gapDistance/2))
       {
       	systick_wait_ms(100);
       	degree = nxt_motor_get_count(NXT_PORT_B);
@@ -167,6 +168,8 @@ int degree = 0;
       	degree = 0;
 		nxt_motor_set_speed(NXT_PORT_A, 0, 1);
 		
+		
+		
 	}
 }
 
@@ -235,11 +238,13 @@ TASK(CheckDistance)
 		SetEvent(TurnLeft, EventTurnLeft);
 		
 		SetEvent(Reverse, EventReverse);
+		SetEvent(Stop, EventStop);
 		
 		SetEvent(TurnRight, EventTurnRight);
 		SetEvent(TurnRight, EventTurnRight);
 		
 		SetEvent(Reverse, EventReverse);
+		SetEvent(Stop, EventStop);
 		
 		SetEvent(TurnLeft, EventTurnLeft);	
 		
