@@ -25,6 +25,9 @@ DeclareTask(CheckDistance);
 DeclareTask(CheckEvents);
 
 int gapDistance = 0;
+U8 parked = 0;
+int forwardDistance = 0;
+int reverseDistance = 0;
 
 void ecrobot_device_initialize(void)
 {
@@ -76,7 +79,7 @@ TASK(ForwardStep)
 		
 		nxt_motor_set_count(NXT_PORT_B, 0);
       
-      while(degree > (gapDistance/3))
+      while(degree > forwardDistance)
       {
       	systick_wait_ms(50);
       	degree = nxt_motor_get_count(NXT_PORT_B);
@@ -105,7 +108,7 @@ TASK(Reverse)
 		
 		nxt_motor_set_count(NXT_PORT_B, 0);
       
-      while(degree < -(gapDistance/2))
+      while(degree < -reverseDistance)
       {
       	systick_wait_ms(100);
       	degree = nxt_motor_get_count(NXT_PORT_B);
@@ -153,9 +156,9 @@ int degree = 0;
 			
 		display_update();
 		
-      while(degree < 65)
+      while(degree < 55)
       {
-      	systick_wait_ms(25);
+      	systick_wait_ms(10);
       	degree = nxt_motor_get_count(NXT_PORT_A);
       	display_clear(0);
 			display_goto_xy(0, 0);
@@ -186,9 +189,9 @@ int degree = 0;
 			
 		display_update();
 		
-      while(degree > -65)
+      while(degree > -55)
       {
-      	systick_wait_ms(25);
+      	systick_wait_ms(10);
       	degree = nxt_motor_get_count(NXT_PORT_A);
       	display_clear(0);
 			display_goto_xy(0, 0);
@@ -266,6 +269,8 @@ TASK(CheckDistance)
 	
 		SetEvent(Stop, EventStop);
 		
+		reverseDistance = gapDistance/2.4;
+		forwardDistance = -1000;
 		SetEvent(ForwardStep, EventForwardStep);
 		SetEvent(Stop, EventStop);
 		
@@ -280,7 +285,13 @@ TASK(CheckDistance)
 		SetEvent(Reverse, EventReverse);
 		SetEvent(Stop, EventStop);
 		
-		SetEvent(TurnLeft, EventTurnLeft);	
+		SetEvent(TurnLeft, EventTurnLeft);
+		
+		forwardDistance = -500;
+		SetEvent(ForwardStep, EventForwardStep);
+		SetEvent(Stop, EventStop);
+		
+		parked = 1;	
 		
 	}
 }
@@ -303,7 +314,6 @@ TASK(CheckEvents)
 	{
 		WaitEvent(EventCheckEvents);
       ClearEvent(EventCheckEvents);
-   
 		
 		Button = ecrobot_get_touch_sensor(NXT_PORT_S4);
 		if(Button == 1 && motorOn == 0)
@@ -312,9 +322,27 @@ TASK(CheckEvents)
 			motorOn = 1;
 			SetEvent(Forward, EventForward);
 		}
-			
+		
+		if(Button == 1 && parked == 1)
+		{
+			Button = 0;
+			parked = 0;
+			reverseDistance = -500;
+			forwardDistance = (gapDistance/2);
+			SetEvent(Reverse, EventReverse);
+			SetEvent(Stop, EventStop);
+			SetEvent(TurnRight, EventTurnRight);
+			SetEvent(ForwardStep, EventForwardStep);
+			SetEvent(Stop, EventStop);
+			SetEvent(TurnLeft, EventTurnLeft);
+			SetEvent(TurnLeft, EventTurnLeft);
+			SetEvent(ForwardStep, EventForwardStep);
+			SetEvent(Stop, EventStop);
+			SetEvent(TurnRight, EventTurnRight);
+			motorOn = 0;
+			gapDistance = 0;
+		}	
 	}
 	
 	TerminateTask();
-
 }
